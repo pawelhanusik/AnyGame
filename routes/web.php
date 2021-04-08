@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\TestSquareController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [TestSquareController::class, 'index']);
-Route::get('/{testSquare}', [TestSquareController::class, 'show']);
+Route::get('/', [GameController::class, 'index'])->name('game.index');
+Route::get('/create', [GameController::class, 'create'])->name('game.create');
+Route::post('/create', [GameController::class, 'store'])->name('game.store');
+Route::get('/{game}', [GameController::class, 'show'])->name('game.show');
 
 
