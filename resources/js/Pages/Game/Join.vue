@@ -61,7 +61,6 @@ export default {
   },
   methods: {
     submit() {
-      console.log("RRR ERR", this.error)
       this.$inertia.get('/' + this.game.id, this.form)
     }
   }
