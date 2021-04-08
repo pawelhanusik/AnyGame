@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Player;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class GameController extends Controller
@@ -64,7 +66,7 @@ class GameController extends Controller
             $password = request('p');
         }
 
-        if (!request()->has('nick')) {
+        if (!request()->has('nick') || strlen(request('nick')) <= 0 ) {
             return inertia('Game/Join', [
                 'game' => $game,
                 'isPublic' => $game->isPublic(),
@@ -73,6 +75,17 @@ class GameController extends Controller
         }
         
         $nick = request('nick');
+        $tmpPlayer = Player::where('game_id', $game->id)->where('nick', $nick)->first();
+        $playerExists = ($tmpPlayer !== null);
+        if ($playerExists && ($tmpPlayer->ip !== request()->ip())) {
+            return inertia('Game/Join', [
+                'game' => $game,
+                'isPublic' => $game->isPublic(),
+                'nick' => $nick,
+                'p' => $password,
+                'error' => 'Nick is already taken'
+            ]);
+        }
 
         if ($password !== $game->password) {
             return inertia('Game/Join', [
@@ -84,9 +97,20 @@ class GameController extends Controller
             ]);
         }
         
+        if (!$playerExists) {
+            Player::create([
+                'nick' => $nick,
+                'game_id' => $game->id,
+                'ip' => request()->ip()
+            ]);
+        } else {
+            $tmpPlayer->touch();
+        }
+        
         return inertia('Game/Show', [
             'nick' => $nick,
-            'game' => $game
+            'game' => $game,
+            'players' => Player::where('game_id', $game->id)->get()
         ]);
     }
 

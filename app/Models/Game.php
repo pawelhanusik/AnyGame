@@ -22,4 +22,8 @@ class Game extends Model
     public function isPublic() {
         return $this->password === NULL;
     }
+
+    public function players() {
+        return $this->hasMany(Player::class);
+    }
 }

@@ -7,6 +7,7 @@
     </div>
     <div class="row">
       <div class="mx-auto mt-5">
+        <div v-if="error" class="text-danger"> {{error}} </div>
         <form @submit.prevent="submit">
           <div class="mb-3">
             <label for="nick" class="form-label"> Nick </label>
@@ -15,7 +16,6 @@
           <div v-if="!isPublic" class="mb-3">
             <label for="p" class="form-label"> Game password </label>
             <input type="text" class="form-control" id="p" v-model="form.p" autocomplete="off">
-            <div v-if="error" class="text-danger"> {{error}} </div>
           </div>
           <button type="submit" class="btn btn-primary">Connect</button>
         </form>
