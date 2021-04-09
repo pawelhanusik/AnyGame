@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Game;
+use App\Models\GameComponent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class GameFactory extends Factory
+class GameComponentFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Game::class;
+    protected $model = GameComponent::class;
 
     /**
      * Define the model's default state.
@@ -22,8 +22,11 @@ class GameFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->word(),
-            'password' => null, // make it public game
+            'pos_x' => random_int(100, 1000),
+            'pos_y' => random_int(100, 500),
+            'rot_x' => 0,
+            'rot_y' => 0,
+            'rot_z' => 0
         ];
     }
 }

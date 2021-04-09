@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Dice;
+use App\Models\Game;
+use App\Models\GameComponent;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,6 +16,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+        $game = Game::factory()->create();
+
+        for ($i = 0; $i < 10; ++$i) {
+            GameComponent::factory()
+                ->for($game)
+                ->for(Dice::factory(), 'gameComponentable')
+                ->create();
+        }
     }
 }
