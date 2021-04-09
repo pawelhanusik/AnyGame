@@ -46,6 +46,11 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
+
+        'player' => [
+            'driver' => 'session',
+            'provider' => 'players'
+        ]
     ],
 
     /*
@@ -75,6 +80,11 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+
+        'players' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Player::class,
+        ]
     ],
 
     /*

@@ -6,7 +6,6 @@ use App\Events\TestEvent;
 use App\Models\Game;
 use App\Models\Player;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class GameController extends Controller
@@ -80,7 +79,8 @@ class GameController extends Controller
         $nick = request('nick');
         $tmpPlayer = Player::where('game_id', $game->id)->where('nick', $nick)->first();
         $playerExists = ($tmpPlayer !== null);
-        if ($playerExists && ($tmpPlayer->ip !== request()->ip())) {
+        $isUserAuthenticated = ($playerExists && auth()->guard('player')->id() === $tmpPlayer->id);
+        if ($playerExists && !$isUserAuthenticated) {
             return inertia('Game/Join', [
                 'game' => $game,
                 'isPublic' => $game->isPublic(),
@@ -100,14 +100,20 @@ class GameController extends Controller
             ]);
         }
         
+        // TODO: Simplify all of these if's
         if (!$playerExists) {
-            Player::create([
+            $player = Player::create([
                 'nick' => $nick,
-                'game_id' => $game->id,
-                'ip' => request()->ip()
+                'game_id' => $game->id
             ]);
-        } else {
+            
+            /** @var \Illuminate\Contracts\Auth\SessionGuard */
+            $playerAuthGuard = auth()->guard('player');
+            $playerAuthGuard->login($player);
+        } else if ($isUserAuthenticated){
             $tmpPlayer->touch();
+        } else {
+            return;
         }
         
         return inertia('Game/Show', [

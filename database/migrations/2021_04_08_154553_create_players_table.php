@@ -17,7 +17,7 @@ class CreatePlayersTable extends Migration
             $table->id();
             $table->text('nick');
             $table->unsignedBigInteger('game_id');
-            $table->text('ip');
+            $table->rememberToken();
             $table->timestamps();
 
             $table->foreign('game_id')->references('id')->on('games')->onDelete('cascade');
