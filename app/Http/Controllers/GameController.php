@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TestEvent;
 use App\Models\Game;
 use App\Models\Player;
 use Illuminate\Http\Request;
@@ -61,6 +62,8 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
+        broadcast(new TestEvent("TestEvent fired in show of " . $game->name));
+
         $password = "";
         if (request()->has('p')) {
             $password = request('p');
