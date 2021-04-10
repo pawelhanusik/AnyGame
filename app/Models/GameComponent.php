@@ -9,6 +9,8 @@ class GameComponent extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+
     public function gameComponentable()
     {
         return $this->morphTo();

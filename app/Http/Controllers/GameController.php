@@ -61,8 +61,6 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
-        broadcast(new TestEvent("TestEvent fired in show of " . $game->name));
-
         $password = "";
         if (request()->has('p')) {
             $password = request('p');

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GameComponentUpdateEvent;
+use App\Http\Resources\GameComponentResource;
 use App\Models\Dice;
 use App\Models\Game;
 use App\Models\GameComponent;
@@ -16,7 +18,7 @@ class GameComponentController extends Controller
      */
     public function index(Game $game)
     {
-        return $game->components;
+        return GameComponentResource::collection($game->components);
     }
 
     /**
@@ -74,7 +76,7 @@ class GameComponentController extends Controller
             abort(404, 'Not found');
             return null;
         }
-        return $gameComponent;
+        return new GameComponentResource($gameComponent);
     }
 
     /**
@@ -116,6 +118,9 @@ class GameComponentController extends Controller
         }
 
         $gameComponent->update($updatedValues);
+        broadcast(new GameComponentUpdateEvent($game, $gameComponent, $updatedValues))->toOthers();
+
+        return null;
     }
 
     /**
@@ -133,5 +138,7 @@ class GameComponentController extends Controller
 
         $gameComponent->gameComponentable()->delete();
         $gameComponent->delete();
+
+        return null;
     }
 }

@@ -9,6 +9,8 @@ class Dice extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+
     public function gameComponent()
     {
         return $this->morphOne(GameComponent::class, 'game_componentable');
