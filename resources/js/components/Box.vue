@@ -62,6 +62,10 @@ const magicArray = [
     [2, 3, 5, 4]
   ]
 ]
+
+let sendChangeIntervalID = null
+const delayBetweenRequests = 100
+
 export default {
   data() {
     return {
@@ -75,10 +79,22 @@ export default {
       isClicked: false,
       moveStartX: 0,
       moveStartY: 0,
-      mouseDownTimestamp: 0
+      mouseDownTimestamp: 0,
+      // -----------------
+      recentChanges: {},
+      lastSendTimestamp: 0
     }
   },
   props: {
+    // IDENTITY
+    componentID: {
+      type: Number,
+      required: true
+    },
+    gameID: {
+      type: Number,
+      required: true
+    },
     // DIMENSIONS
     width: {
       type: Number,
@@ -179,6 +195,23 @@ export default {
       return magicArray[rx][ry][rz]
     }
   },
+  watch: {
+    positionX(val) {
+      this.sendChange('posX', val)
+    },
+    positionY(val) {
+      this.sendChange('posY', val)
+    },
+    rotationX(val) {
+      this.sendChange('rotX', val)
+    },
+    rotationY(val) {
+      this.sendChange('rotY', val)
+    },
+    rotationZ(val) {
+      this.sendChange('rotZ', val)
+    }
+  },
 
   created: function() {
     window.addEventListener('mousemove', this.onMouseMove);
@@ -190,11 +223,17 @@ export default {
     this.rotationZ = this.initialRotationZ
     this.positionX = this.posX
     this.positionY = this.posY
+
+    sendChangeIntervalID = setInterval(() => {this.sendChange(null, null)}, delayBetweenRequests)
   },
   destroyed: function() {
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mousedown', this.onMouseDown);
     window.removeEventListener('mouseup', this.onMouseUp);
+
+    if (sendChangeIntervalID !== null) {
+      clearInterval(sendChangeIntervalID)
+    }
   },
 
   methods: {
@@ -231,8 +270,19 @@ export default {
         this.positionX = evt.clientX - this.moveStartX
         this.positionY = evt.clientY - this.moveStartY
       }
-    }
+    },
     // ---------------------------
+    sendChange(key, value) {
+      if (Date.now() - this.lastSendTimestamp > delayBetweenRequests) {
+        if (Object.keys(this.recentChanges).length > 0) {
+          axios.put(`/${this.gameID}/components/${this.componentID}`, this.recentChanges)
+          this.recentChanges = {}
+        }
+        this.lastSendTimestamp = Date.now()
+      } else if (key !== null && value !== null) {
+        this.recentChanges[key] = value
+      }
+    }
   }
 }
 </script>

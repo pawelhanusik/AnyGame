@@ -35,23 +35,6 @@ export default {
       .listen('TestEvent', (e) => {
         console.log("ECHO TestEvent", e)
       })
-    /*Echo.join(`test-channel-1`)
-      .here((users) => {
-        console.log("ECHO here", users)
-      })
-      .joining((user) => {
-        console.log("ECHO joining", user)
-      })
-      .leaving((user) => {
-        console.log("ECHO leaving", user)
-      })
-      .error((error) => {
-        console.error("ECHO error:", error)
-      })
-      .listen('App\\Event\\TestEvent', (e) => {
-        console.log("ECHO listen; got event:", e)
-      })*/
-    
   },
   destroyed() {
     if (rollDiceIntervalID !== null) {

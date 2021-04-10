@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-/*Broadcast::channel('test-channel.{id}', function ($user, $id) {
-    return ['channel_id' => $id];
-});*/
+Broadcast::channel('game-channel.{gameID}', function ($player, $gameID) {
+    if ($player->game_id === $gameID) {
+        return ['id' => $player->id, 'nick' => $player->nick];
+    }
+});

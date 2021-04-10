@@ -23,11 +23,24 @@
       </div>
     </div>
 
+    <div ref="game_components_container" />
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
+import Dice from '@/components/Dice.vue'
+const DiceClass = Vue.extend(Dice)
+
 export default {
+  components: {
+    Dice
+  },
+  data() {
+    return {
+      gameComponents: {}
+    }
+  },
   props: {
     nick: {
       type: String
@@ -37,6 +50,59 @@ export default {
     },
     players: {
       type: Array
+    }
+  },
+  created() {
+    axios.get(`/${this.game.id}/components`).then((res) => {
+      this.createComponents(res.data.data)
+    })
+    Echo.join(`game-channel.${this.game.id}`)
+      .listen('GameComponentUpdateEvent', (e) => {
+        console.log("ECHO listen; got event:", e)
+        const updatedValues = e.updatedValues
+        const component2update = this.gameComponents[e.componentID]
+        if (!component2update) {
+          console.error("Cannot find component to update")
+          return
+        }
+
+        component2update.updateParams([
+          parseInt(updatedValues['pos_x']) ?? null,
+          parseInt(updatedValues['pos_y']) ?? null,
+          parseInt(updatedValues['rot_x']) ?? null,
+          parseInt(updatedValues['rot_y']) ?? null,
+          parseInt(updatedValues['rot_z']) ?? null
+        ])
+      })
+  },
+  destroyed() {
+    Echo.leave()
+  },
+  methods: {
+    createComponents(components) {
+      const gameComponentsContainer = this.$refs['game_components_container']
+
+      for (let c of components) {
+        switch(c.component_type) {
+          case 'App\\Models\\Dice':
+            const newDice = new DiceClass({
+              propsData: {
+                componentID: parseInt(c.id),
+                gameID: parseInt(c.game_id),
+                posX: parseInt(c.posX),
+                posY: parseInt(c.posY),
+                rotX: parseInt(c.rotX),
+                rotY: parseInt(c.rotY),
+                rotZ: parseInt(c.rotZ)
+              }
+            })
+            newDice.$mount()
+            gameComponentsContainer.appendChild(newDice.$el)
+            
+            this.gameComponents[c.id] = newDice
+            break
+        }
+      }
     }
   }
 }

@@ -1,6 +1,8 @@
 <template>
  <Box
     ref="box"
+    :componentID="componentID"
+    :gameID="gameID"
 
     front="url(res/dice/1.png)"
     top="url(res/dice/2.png)"
@@ -13,9 +15,9 @@
     :height="size"
     :thickness="size"
 
-    :initialRotationX="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : 0"
-    :initialRotationY="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : 0"
-    :initialRotationZ="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : 0"
+    :initialRotationX="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : rotX"
+    :initialRotationY="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : rotY"
+    :initialRotationZ="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : rotZ"
     :posX="posX"
     :posY="posY"
 
@@ -34,13 +36,22 @@ export default {
     Box
   },
   props: {
+    componentID: {
+      type: Number,
+      required: true
+    },
+    gameID: {
+      type: Number,
+      required: true
+    },
+
     size: {
       type: Number,
       default: 64
     },
     randomNumberOnStart: {
       type: Boolean,
-      default: true
+      default: false
     },
     posX: {
       type: Number,
@@ -49,6 +60,18 @@ export default {
     posY: {
       type: Number,
       default: 100
+    },
+    rotX: {
+      type: Number,
+      default: 0
+    },
+    rotY: {
+      type: Number,
+      default: 0
+    },
+    rotZ: {
+      type: Number,
+      default: 0
     }
   },
   computed: {
@@ -75,6 +98,19 @@ export default {
         this.$refs.box.rotationZ += rz/2
         this.$refs.box.scale /= 1.5;
       }, 1 * 300)
+    },
+    updateParams(params) {
+      if (!Array.isArray(params) || params.length < 5 ) {
+        console.error("updateParams() extected 5 items in params array, less given")
+        return
+      }
+
+      if (params[0]) this.$refs.box.positionX = params[0]
+      if (params[1]) this.$refs.box.positionY = params[1]
+      if (params[2]) this.$refs.box.rotationX = params[2]
+      if (params[3]) this.$refs.box.rotationY = params[3]
+      if (params[4]) this.$refs.box.rotationZ = params[4]
+      this.$refs.box.recentChanges = {}
     }
   }
 }
