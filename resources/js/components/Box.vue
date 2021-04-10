@@ -25,12 +25,12 @@
         transition: all linear ${animationStepTime}ms;
       `"
     >
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 1px solid black; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 1px solid black; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 1px solid black; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 1px solid black; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 1px solid black; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 1px solid black; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
     </div>
   </div>
 </template>
@@ -82,7 +82,9 @@ export default {
       mouseDownTimestamp: 0,
       // -----------------
       recentChanges: {},
-      lastSendTimestamp: 0
+      lastSendTimestamp: 0,
+      haveEditRights: false,
+      shouldAbandonEditRights: false
     }
   },
   props: {
@@ -249,9 +251,9 @@ export default {
     onMouseUp() {
       if (
         this.isClicked
+        && this.haveEditRights
         && Date.now() - this.mouseDownTimestamp < 100
       ) {
-        //this.flip()
         this.$emit('action')
       }
 
@@ -260,23 +262,55 @@ export default {
       this.moveStartY = 0
     },
     onMouseLeave() {
+      this.shouldAbandonEditRights = true
+
       this.isMouseOver = false
     },
     onMouseEnter() {
+      this.askForEditRights()
+
       this.isMouseOver = true
     },
     onMouseMove(evt) {
-      if (this.isClicked) {
+      if (
+        this.isClicked
+        && this.haveEditRights
+      ) {
         this.positionX = evt.clientX - this.moveStartX
         this.positionY = evt.clientY - this.moveStartY
       }
     },
     // ---------------------------
+    askForEditRights() {
+      axios.get(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
+        if (res?.data?.granted === true) {
+          this.haveEditRights = true
+          this.shouldAbandonEditRights = false
+        }
+      }).catch((err) => {})
+    },
+    abandonEditRights() {
+      this.haveEditRights = false
+      axios.delete(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
+        if (res?.data?.abandoned === true) {
+          this.shouldAbandonEditRights = false
+        }
+      }).catch((err) => {})
+    },
     sendChange(key, value) {
+      if (!this.haveEditRights) {
+        return
+      }
       if (Date.now() - this.lastSendTimestamp > delayBetweenRequests) {
         if (Object.keys(this.recentChanges).length > 0) {
-          axios.put(`/${this.gameID}/components/${this.componentID}`, this.recentChanges)
-          this.recentChanges = {}
+          axios.put(`/${this.gameID}/components/${this.componentID}`, this.recentChanges).then((res) => {
+            this.recentChanges = {}
+            if (this.shouldAbandonEditRights) {
+              this.abandonEditRights()
+            }
+          })
+        } else if (this.shouldAbandonEditRights) {
+          this.abandonEditRights()
         }
         this.lastSendTimestamp = Date.now()
       } else if (key !== null && value !== null) {

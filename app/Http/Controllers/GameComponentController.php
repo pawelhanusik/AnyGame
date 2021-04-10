@@ -14,6 +14,7 @@ class GameComponentController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  \App\Models\Game  $game
      * @return \Illuminate\Http\Response
      */
     public function index(Game $game)
@@ -25,6 +26,7 @@ class GameComponentController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Game  $game
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, Game $game)
@@ -67,6 +69,7 @@ class GameComponentController extends Controller
     /**
      * Display the specified resource.
      *
+     * @param  \App\Models\Game  $game
      * @param  \App\Models\GameComponent  $gameComponent
      * @return \Illuminate\Http\Response
      */
@@ -79,15 +82,65 @@ class GameComponentController extends Controller
         return new GameComponentResource($gameComponent);
     }
 
+
+    /**
+     * Grand the player rights to edit the gameComponent
+     *
+     * @param  \App\Models\Game  $game
+     * @param  \App\Models\GameComponent  $gameComponent
+     * @return \Illuminate\Http\Response
+     */
+    public function grantEditRights(Game $game, GameComponent $gameComponent)
+    {
+        if ($gameComponent->owner !== null) {
+            // component is not on table
+            return ['granted' => false];
+        }
+        if ($gameComponent->editor !== null) {
+            return ['granted' => false];
+        }
+        
+        $gameComponent->editor_id = auth()->guard('player')->id();
+        $gameComponent->save();
+        return ['granted' => true];
+    }
+    /**
+     * Remove edit rights of the player
+     *
+     * @param  \App\Models\Game  $game
+     * @param  \App\Models\GameComponent  $gameComponent
+     * @return \Illuminate\Http\Response
+     */
+    public function abandonEditRights(Game $game, GameComponent $gameComponent)
+    {
+        if ($gameComponent->editor?->id !== auth()->guard('player')->id()) {
+            return ['abandoned' => false];
+        }
+        $gameComponent->editor_id = null;
+        $gameComponent->save();
+        return ['abandoned' => true];
+    }
+
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Game  $game
      * @param  \App\Models\GameComponent  $gameComponent
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Game $game, GameComponent $gameComponent)
     {
+        if ($gameComponent->owner !== null) {
+            // component is not on table - can't update
+            abort(404, 'Not found');
+            return null;
+        }
+        if ($gameComponent->editor?->id !== auth()->guard('player')->id()) {
+            // user hasn't been granted permissions to update the component
+            abort(403);
+            return null;
+        }
         if ($gameComponent->game->id !== $game->id) {
             abort(404, 'Not found');
             return null;
@@ -126,6 +179,7 @@ class GameComponentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
+     * @param  \App\Models\Game  $game
      * @param  \App\Models\GameComponent  $gameComponent
      * @return \Illuminate\Http\Response
      */

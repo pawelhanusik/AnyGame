@@ -19,4 +19,11 @@ class GameComponent extends Model
     public function game() {
         return $this->belongsTo(Game::class);
     }
+
+    public function owner() {
+        return $this->belongsTo(Player::class, 'owner_id');
+    }
+    public function editor() {
+        return $this->belongsTo(Player::class, 'editor_id');
+    }
 }

@@ -22,9 +22,14 @@ Route::get('/create', [GameController::class, 'create'])->name('game.create');
 Route::post('/create', [GameController::class, 'store'])->name('game.store');
 Route::get('/{game}', [GameController::class, 'show'])->name('game.show');
 
+
 // GAME COMPONENTS
 Route::get('/{game}/components', [GameComponentController::class, 'index']);
 Route::get('/{game}/components/{gameComponent}', [GameComponentController::class, 'show']);
 Route::post('/{game}/components', [GameComponentController::class, 'store']);
+
+Route::get('/{game}/components/{gameComponent}/editrights', [GameComponentController::class, 'grantEditRights']);
+Route::delete('/{game}/components/{gameComponent}/editrights', [GameComponentController::class, 'abandonEditRights']);
 Route::put('/{game}/components/{gameComponent}', [GameComponentController::class, 'update']);
+
 Route::delete('/{game}/components/{gameComponent}', [GameComponentController::class, 'destroy']);

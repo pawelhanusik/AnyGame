@@ -25,4 +25,11 @@ class Player extends Model implements AuthenticatableContract
     public function game() {
         return $this->belongsTo(Game::class);
     }
+
+    public function ownedComponents() {
+        return $this->belongsToMany(GameComponent::class, 'owner_id');
+    }
+    public function currentlyEditedComponents() {
+        return $this->belongsToMany(GameComponent::class, 'editor_id');
+    }
 }

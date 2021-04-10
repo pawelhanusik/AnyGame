@@ -17,6 +17,11 @@ class CreateGameComponentsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('game_id');
             $table->morphs("game_componentable");
+
+            // tells who has the component in theirs hand (null if on table)
+            $table->unsignedBigInteger('owner_id')->nullable();
+            // tells who is allowed to edit the component
+            $table->unsignedBigInteger('editor_id')->nullable();
             
             $table->integer('pos_x');
             $table->integer('pos_y');
@@ -28,6 +33,8 @@ class CreateGameComponentsTable extends Migration
 
             
             $table->foreign('game_id')->references('id')->on('games')->onDelete('cascade');
+            $table->foreign('owner_id')->references('id')->on('players')->onDelete('set null');
+            $table->foreign('editor_id')->references('id')->on('players')->onDelete('set null');
         });
     }
 
