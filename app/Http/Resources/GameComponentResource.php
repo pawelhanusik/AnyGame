@@ -30,9 +30,7 @@ class GameComponentResource extends JsonResource
             
             'posX' => $this->pos_x,
             'posY' => $this->pos_y,
-            'rotX' => $this->rot_x,
-            'rotY' => $this->rot_y,
-            'rotZ' => $this->rot_z
+            'orientation' => $this->orientation
         ];
     }
 }

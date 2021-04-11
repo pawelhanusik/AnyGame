@@ -25,6 +25,7 @@
 
 <script>
 import Box from '@/components/Box.vue'
+
 export default {
   components: {
     Box
@@ -57,15 +58,25 @@ export default {
     }
   },
   methods: {
-    flip() {
-      setTimeout(() => {
-        this.$refs.box.rotationY += 90
-        this.$refs.box.scale *= 1.5;
-      }, 0 * this.$refs.box.animationStepTime)
-      setTimeout(() => {
-        this.$refs.box.rotationY += 90
-        this.$refs.box.scale /= 1.5;
-      }, 1 * this.$refs.box.animationStepTime)
+    flip(orientation) {
+      let ry = null
+      if (this.$$refs.box.rotationY == 0 && orientation == 6) {
+        ry = 180
+      }
+      if (this.$$refs.box.rotationY == 180 && orientation == 1) {
+        ry = 0
+      }
+      
+      if (ry !== null) {
+        setTimeout(() => {
+          this.$refs.box.rotationY = 90
+          this.$refs.box.scale *= 1.5;
+        }, 0 * this.$refs.box.animationStepTime)
+        setTimeout(() => {
+          this.$refs.box.rotationY = ry
+          this.$refs.box.scale /= 1.5;
+        }, 1 * this.$refs.box.animationStepTime)
+      }
     }
   }
 }

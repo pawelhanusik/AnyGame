@@ -24,9 +24,7 @@ class GameComponentFactory extends Factory
         return [
             'pos_x' => random_int(100, 1000),
             'pos_y' => random_int(100, 500),
-            'rot_x' => 0,
-            'rot_y' => 0,
-            'rot_z' => 0
+            'orientation' => 0
         ];
     }
 }

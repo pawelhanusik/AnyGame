@@ -58,7 +58,6 @@ export default {
     })
     Echo.join(`game-channel.${this.game.id}`)
       .listen('GameComponentUpdateEvent', (e) => {
-        console.log("ECHO listen; got event:", e)
         const updatedValues = e.updatedValues
         const component2update = this.gameComponents[e.componentID]
         if (!component2update) {
@@ -67,11 +66,9 @@ export default {
         }
 
         component2update.updateParams([
-          parseInt(updatedValues['pos_x']) ?? null,
-          parseInt(updatedValues['pos_y']) ?? null,
-          parseInt(updatedValues['rot_x']) ?? null,
-          parseInt(updatedValues['rot_y']) ?? null,
-          parseInt(updatedValues['rot_z']) ?? null
+          parseInt(updatedValues['posX']) ?? null,
+          parseInt(updatedValues['posY']) ?? null,
+          parseInt(updatedValues['orientation']) ?? null
         ])
       })
   },
@@ -90,14 +87,13 @@ export default {
                 componentID: parseInt(c.id),
                 gameID: parseInt(c.game_id),
                 posX: parseInt(c.posX),
-                posY: parseInt(c.posY),
-                rotX: parseInt(c.rotX),
-                rotY: parseInt(c.rotY),
-                rotZ: parseInt(c.rotZ)
+                posY: parseInt(c.posY)
               }
             })
             newDice.$mount()
             gameComponentsContainer.appendChild(newDice.$el)
+
+            newDice.updateParams([null, null, parseInt(c.orientation) ?? null])
             
             this.gameComponents[c.id] = newDice
             break

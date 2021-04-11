@@ -146,34 +146,10 @@ class GameComponentController extends Controller
             return null;
         }
 
-        $updatedValues = [];
-
-        if ($request->has('posX')) {
-            $updatedValues['pos_x'] = $request['posX'];
-        }
-        if ($request->has('posY')) {
-            $updatedValues['pos_y'] = $request['posY'];
-        }
-        if ($request->has('rotX')) {
-            $updatedValues['rot_x'] = $request['rotX'];
-        }
-        if ($request->has('rotY')) {
-            $updatedValues['rot_y'] = $request['rotY'];
-        }
-        if ($request->has('rotZ')) {
-            $updatedValues['rot_z'] = $request['rotZ'];
-        }
-
-        if ($request->has('type')) {
-            if (strtolower($request['type']) == "dice") {
-                // dices don't have any properties
-            }
-        }
-
-        $gameComponent->update($updatedValues);
+        $updatedValues = $gameComponent->edit($request->all());
         broadcast(new GameComponentUpdateEvent($game, $gameComponent, $updatedValues))->toOthers();
 
-        return null;
+        return $updatedValues;
     }
 
     /**

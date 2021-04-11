@@ -36,32 +36,6 @@
 </template>
 
 <script>
-const magicArray = [
-  [
-    [1, 1, 1, 1],
-    [3, 5, 4, 2],
-    [6, 6, 6, 6],
-    [4, 2, 3, 5]
-  ],
-  [
-    [5, 4, 2, 3],
-    [5, 4, 2, 3],
-    [5, 4, 2, 3],
-    [5, 4, 2, 3]
-  ],
-  [
-    [6, 6, 6, 6],
-    [4, 2, 3, 5],
-    [1, 1, 1, 1],
-    [3, 5, 4, 2]
-  ],
-  [
-    [2, 3, 5, 4],
-    [2, 3, 5, 4],
-    [2, 3, 5, 4],
-    [2, 3, 5, 4]
-  ]
-]
 
 let sendChangeIntervalID = null
 const delayBetweenRequests = 100
@@ -188,30 +162,12 @@ export default {
       default: 200
     }
   },
-  computed: {
-    visibleSide() {
-      const rx = Math.round((this.rotationX % 360) / 90) % 4
-      const ry = Math.round((this.rotationY % 360) / 90) % 4
-      const rz = Math.round((this.rotationZ % 360) / 90) % 4
-
-      return magicArray[rx][ry][rz]
-    }
-  },
   watch: {
     positionX(val) {
       this.sendChange('posX', val)
     },
     positionY(val) {
       this.sendChange('posY', val)
-    },
-    rotationX(val) {
-      this.sendChange('rotX', val)
-    },
-    rotationY(val) {
-      this.sendChange('rotY', val)
-    },
-    rotationZ(val) {
-      this.sendChange('rotZ', val)
     }
   },
 
@@ -254,7 +210,7 @@ export default {
         && this.haveEditRights
         && Date.now() - this.mouseDownTimestamp < 100
       ) {
-        this.$emit('action')
+        this.sendChange('event', 'action', true)
       }
 
       this.isClicked = false
@@ -297,13 +253,27 @@ export default {
         }
       }).catch((err) => {})
     },
-    sendChange(key, value) {
+    sendChange(key, value, now = false) {
       if (!this.haveEditRights) {
+        return
+      }
+      if (now) {
+        let payload = {}
+        payload[key] = value
+        axios.put(`/${this.gameID}/components/${this.componentID}`, payload).then((res) => {
+          if (res.data?.orientation) {
+            this.$emit('action', res.data.orientation)
+          }
+        })
         return
       }
       if (Date.now() - this.lastSendTimestamp > delayBetweenRequests) {
         if (Object.keys(this.recentChanges).length > 0) {
           axios.put(`/${this.gameID}/components/${this.componentID}`, this.recentChanges).then((res) => {
+            if (res.data?.orientation) {
+              this.$emit('action', res.data.orientation)
+            }
+            
             this.recentChanges = {}
             if (this.shouldAbandonEditRights) {
               this.abandonEditRights()

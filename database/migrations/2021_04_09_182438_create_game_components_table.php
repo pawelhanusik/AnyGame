@@ -23,11 +23,11 @@ class CreateGameComponentsTable extends Migration
             // tells who is allowed to edit the component
             $table->unsignedBigInteger('editor_id')->nullable();
             
+            // component's positions
             $table->integer('pos_x');
             $table->integer('pos_y');
-            $table->integer('rot_x');
-            $table->integer('rot_y');
-            $table->integer('rot_z');
+            // [0; 5] -> tells which side of the component is on top
+            $table->integer('orientation');
 
             $table->timestamps();
 

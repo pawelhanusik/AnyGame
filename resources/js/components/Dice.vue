@@ -15,9 +15,9 @@
     :height="size"
     :thickness="size"
 
-    :initialRotationX="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : rotX"
-    :initialRotationY="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : rotY"
-    :initialRotationZ="(this.randomNumberOnStart) ? Math.floor(Math.random() * 4 + 1) * 90 : rotZ"
+    :initialRotationX="rotX"
+    :initialRotationY="rotY"
+    :initialRotationZ="rotZ"
     :posX="posX"
     :posY="posY"
 
@@ -28,12 +28,91 @@
 </template>
 
 <script>
-
 import Box from '@/components/Box.vue'
+
+const rotationFromOrientationTable = [
+  [
+    [0, 0, 0],
+    [0, 0, 1],
+    [0, 0, 2],
+    [0, 0, 3],
+    [2, 2, 0],
+    [2, 2, 1],
+    [2, 2, 2],
+    [2, 2, 3]
+  ], [
+    [0, 1, 3],
+    [0, 3, 1],
+    [1, 0, 2],
+    [1, 1, 2],
+    [1, 2, 2],
+    [1, 3, 2],
+    [2, 1, 1],
+    [2, 3, 3],
+    [3, 0, 0],
+    [3, 1, 0],
+    [3, 2, 0],
+    [3, 3, 0]
+  ], [
+    [0, 1, 0],
+    [0, 3, 2],
+    [1, 0, 3],
+    [1, 1, 3],
+    [1, 2, 3],
+    [1, 3, 3],
+    [2, 1, 2],
+    [2, 3, 0],
+    [3, 0, 1],
+    [3, 1, 1],
+    [3, 2, 1],
+    [3, 3, 1]
+  ], [
+    [0, 1, 2],
+    [0, 3, 0],
+    [1, 0, 1],
+    [1, 1, 1],
+    [1, 2, 1],
+    [1, 3, 1],
+    [2, 1, 0],
+    [2, 3, 2],
+    [3, 0, 3],
+    [3, 1, 3],
+    [3, 2, 3],
+    [3, 3, 3]
+  ], [
+    [0, 1, 1],
+    [0, 3, 3],
+    [1, 0, 0],
+    [1, 1, 0],
+    [1, 2, 0],
+    [1, 3, 0],
+    [2, 1, 3],
+    [2, 3, 1],
+    [3, 0, 2],
+    [3, 1, 2],
+    [3, 2, 2],
+    [3, 3, 2]
+  ], [
+    [0, 2, 0],
+    [0, 2, 1],
+    [0, 2, 2],
+    [0, 2, 3],
+    [2, 0, 0],
+    [2, 0, 1],
+    [2, 0, 2],
+    [2, 0, 3]
+  ]
+]
 
 export default {
   components: {
     Box
+  },
+  data() {
+    return {
+      animationIsRunning: false,
+      animationQueue: []
+    }
   },
   props: {
     componentID: {
@@ -48,10 +127,6 @@ export default {
     size: {
       type: Number,
       default: 64
-    },
-    randomNumberOnStart: {
-      type: Boolean,
-      default: false
     },
     posX: {
       type: Number,
@@ -74,42 +149,79 @@ export default {
       default: 0
     }
   },
-  computed: {
-    number() {
-      return this.$refs.box.visibleSide
-    }
-  },
   methods: {
     // actions
-    roll() {
-      const rx = Math.floor(Math.random() * 4 + 1) * 90
-      const ry = Math.floor(Math.random() * 4 + 1) * 90
-      const rz = Math.floor(Math.random() * 4 + 1) * 90
+    roll(orientation) {
+      //console.log("orientation", orientation)
+      const allPosiibleRotations = rotationFromOrientationTable[orientation]
+      let [rx, ry, rz] = allPosiibleRotations[
+        Math.floor(Math.random() * allPosiibleRotations.length)
+      ]
+      //console.log("DICE roti: ", rx, ry, rz)
+      /*if (rx == 0) rx = 4
+      if (ry == 0) ry = 4
+      if (rz == 0) rz = 4*/
+      rx *= 90
+      ry *= 90
+      rz *= 90
+      /*
+      console.log("DICE rotations: ", rx, ry, rz)
+      console.log("DICE current: ", this.$refs.box.rotationX, this.$refs.box.rotationY, this.$refs.box.rotationZ)
+      rx = rx - this.$refs.box.rotationX % 360
+      ry = rx - this.$refs.box.rotationY % 360
+      rz = rx - this.$refs.box.rotationZ % 360
+      console.log("DICE rotations after tweak: ", rx, ry, rz)
+      */
 
-      setTimeout(() => {
-        this.$refs.box.rotationX += rx/2
-        this.$refs.box.rotationY += ry/2
-        this.$refs.box.rotationZ += rz/2
+      this.animationAddStep(() => {
+        this.$refs.box.rotationX = rx/2
+        this.$refs.box.rotationY = ry/2
+        this.$refs.box.rotationZ = rz/2
         this.$refs.box.scale *= 1.5;
-      }, 0 * 300)
-      setTimeout(() => {
-        this.$refs.box.rotationX += rx/2
-        this.$refs.box.rotationY += ry/2
-        this.$refs.box.rotationZ += rz/2
+      })
+      this.animationAddStep(() => {
+        this.$refs.box.rotationX = rx
+        this.$refs.box.rotationY = ry
+        this.$refs.box.rotationZ = rz
         this.$refs.box.scale /= 1.5;
-      }, 1 * 300)
+      })
+      this.animationStart()
     },
+
+    animationStep() {
+      if (this.animationQueue.length <= 0) {
+        this.animationIsRunning = false
+        return
+      }
+      const stepFunc = this.animationQueue.shift()
+      stepFunc()
+      
+      setTimeout(this.animationStep, this.$refs.box.animationStepTime)
+    },
+    animationStart() {
+      if (this.animationIsRunning) {
+        // already started
+        return
+      }
+      this.animationIsRunning = true
+      this.animationStep()
+    },
+    animationAddStep(func) {
+      this.animationQueue.push(func)
+    },
+
     updateParams(params) {
-      if (!Array.isArray(params) || params.length < 5 ) {
-        console.error("updateParams() extected 5 items in params array, less given")
+      if (!Array.isArray(params) || params.length < 3 ) {
+        console.error("updateParams() extected 3 items in params array, less given")
         return
       }
 
       if (params[0]) this.$refs.box.positionX = params[0]
       if (params[1]) this.$refs.box.positionY = params[1]
-      if (params[2]) this.$refs.box.rotationX = params[2]
-      if (params[3]) this.$refs.box.rotationY = params[3]
-      if (params[4]) this.$refs.box.rotationZ = params[4]
+      
+      const orientation = params[2]
+      if (orientation) this.roll(orientation)
+
       this.$refs.box.recentChanges = {}
     }
   }
