@@ -24,6 +24,7 @@
     :animationStepTime="300"
 
     @action="roll"
+    @client_action="client_roll"
   />
 </template>
 
@@ -186,6 +187,11 @@ export default {
         this.$refs.box.scale /= 1.5;
       })
       this.animationStart()
+    },
+    client_roll() {
+      this.roll(
+        Math.floor(Math.random() * 6)
+      )
     },
 
     animationStep() {

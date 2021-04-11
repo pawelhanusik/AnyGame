@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <dice v-for="i in 7" :key="i" :posX="randomX()" :posY="randomY()" style="z-index: -1000" ref="dices" />
+    <dice v-for="i in 7" :key="i" :componentID="0" :gameID="0" :posX="randomX()" :posY="randomY()" style="z-index: -1000" ref="dices" />
   </div>
 </template>
 
@@ -28,7 +28,7 @@ export default {
   created() {
     rollDiceIntervalID = setInterval(() => {
       const randomID = Math.floor(Math.random() * this.$refs.dices.length)
-      this.$refs.dices[randomID].roll()
+      this.$refs.dices[randomID].client_roll()
     }, 3000)
 
     Echo.channel('test-channel.1')

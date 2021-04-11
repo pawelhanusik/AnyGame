@@ -22,6 +22,7 @@
     bottom="#fff"
 
     @action="flip"
+    @client_action="client_flip"
   />
 </template>
 
@@ -88,6 +89,11 @@ export default {
           this.$refs.box.scale /= 1.5;
         }, 1 * this.$refs.box.animationStepTime)
       }
+    },
+    client_flip() {
+      this.flip(
+        this.$refs.box.rotationY == 180 ? 0 : 5
+      )
     },
 
     updateParams(params) {

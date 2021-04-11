@@ -25,12 +25,12 @@
         transition: all linear ${animationStepTime}ms;
       `"
     >
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 1px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
     </div>
   </div>
 </template>
@@ -207,10 +207,17 @@ export default {
     onMouseUp() {
       if (
         this.isClicked
-        && this.haveEditRights
         && Date.now() - this.mouseDownTimestamp < 100
       ) {
-        this.sendChange('event', 'action', true)
+        if (this.gameID && this.componentID) {
+          // server event (if have rights)
+          if (this.haveEditRights) {
+            this.sendChange('event', 'action', true)
+          }
+        } else {
+          // client event
+          this.$emit('client_action')
+        }
       }
 
       this.isClicked = false
@@ -230,7 +237,10 @@ export default {
     onMouseMove(evt) {
       if (
         this.isClicked
-        && this.haveEditRights
+        && (
+          this.haveEditRights
+          || !this.gameID
+        )
       ) {
         this.positionX = evt.clientX - this.moveStartX
         this.positionY = evt.clientY - this.moveStartY
@@ -238,6 +248,9 @@ export default {
     },
     // ---------------------------
     askForEditRights() {
+      if (!this.gameID || !this.componentID) {
+        return
+      }
       axios.get(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
         if (res?.data?.granted === true) {
           this.haveEditRights = true
@@ -246,6 +259,9 @@ export default {
       }).catch((err) => {})
     },
     abandonEditRights() {
+      if (!this.gameID || !this.componentID) {
+        return
+      }
       this.haveEditRights = false
       axios.delete(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
         if (res?.data?.abandoned === true) {
