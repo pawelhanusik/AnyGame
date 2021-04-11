@@ -97,8 +97,8 @@ export default {
     },
 
     updateParams(params) {
-      if (!Array.isArray(params) || params.length < 3 ) {
-        console.error("updateParams() extected 3 items in params array, less given")
+      if (!Array.isArray(params) || params.length < 4 ) {
+        console.error("updateParams() extected 4 items in params array, less given")
         return
       }
 
@@ -107,6 +107,8 @@ export default {
       
       const orientation = params[2]
       if (orientation) this.flip(orientation)
+
+      if (params[3] !== null) this.$refs.box.hidden = params[3]
 
       this.$refs.box.recentChanges = {}
     }

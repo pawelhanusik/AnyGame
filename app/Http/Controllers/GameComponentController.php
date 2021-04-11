@@ -120,6 +120,50 @@ class GameComponentController extends Controller
         $gameComponent->save();
         return ['abandoned' => true];
     }
+    /**
+     * Grand the player ownership of the gameComponent
+     *
+     * @param  \App\Models\Game  $game
+     * @param  \App\Models\GameComponent  $gameComponent
+     * @return \Illuminate\Http\Response
+     */
+    public function grantOwnership(Game $game, GameComponent $gameComponent)
+    {
+        if ($gameComponent->owner !== null) {
+            // component is not on table
+            return ['granted' => false, 'error' => 'owner is ' . $gameComponent->owner->nick];
+        }
+        if ($gameComponent->editor?->id !== auth()->guard('player')->id()) {
+            // to own the component, one have edit it
+            return ['granted' => false, 'error' => 'you are not an editor'];
+        }
+        
+        $gameComponent->owner_id = auth()->guard('player')->id();
+        $gameComponent->save();
+
+        broadcast(new GameComponentUpdateEvent($game, $gameComponent, ['visibility' => 'hidden']))->toOthers();
+
+        return ['granted' => true];
+    }
+    /**
+     * Remove ownership of the player
+     *
+     * @param  \App\Models\Game  $game
+     * @param  \App\Models\GameComponent  $gameComponent
+     * @return \Illuminate\Http\Response
+     */
+    public function abandonOwnership(Game $game, GameComponent $gameComponent)
+    {
+        if ($gameComponent->owner?->id !== auth()->guard('player')->id()) {
+            return ['abandoned' => false];
+        }
+        $gameComponent->owner_id = null;
+        $gameComponent->save();
+
+        broadcast(new GameComponentUpdateEvent($game, $gameComponent, ['visibility' => 'visible']))->toOthers();
+
+        return ['abandoned' => true];
+    }
 
     /**
      * Update the specified resource in storage.

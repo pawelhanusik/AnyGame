@@ -72,7 +72,8 @@ export default {
         component2update.updateParams([
           parseInt(updatedValues['posX']) ?? null,
           parseInt(updatedValues['posY']) ?? null,
-          parseInt(updatedValues['orientation']) ?? null
+          parseInt(updatedValues['orientation']) ?? null,
+          (updatedValues['visibility'] === 'hidden')
         ])
       })
   },
@@ -97,7 +98,7 @@ export default {
             newDice.$mount()
             gameComponentsContainer.appendChild(newDice.$el)
 
-            newDice.updateParams([null, null, parseInt(c.orientation) ?? null])
+            newDice.updateParams([null, null, parseInt(c.orientation) ?? null, null])
             
             this.gameComponents[c.id] = newDice
             break

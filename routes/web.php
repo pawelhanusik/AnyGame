@@ -30,6 +30,8 @@ Route::post('/{game}/components', [GameComponentController::class, 'store']);
 
 Route::get('/{game}/components/{gameComponent}/editrights', [GameComponentController::class, 'grantEditRights']);
 Route::delete('/{game}/components/{gameComponent}/editrights', [GameComponentController::class, 'abandonEditRights']);
+Route::get('/{game}/components/{gameComponent}/ownership', [GameComponentController::class, 'grantOwnership']);
+Route::delete('/{game}/components/{gameComponent}/ownership', [GameComponentController::class, 'abandonOwnership']);
 Route::put('/{game}/components/{gameComponent}', [GameComponentController::class, 'update']);
 
 Route::delete('/{game}/components/{gameComponent}', [GameComponentController::class, 'destroy']);

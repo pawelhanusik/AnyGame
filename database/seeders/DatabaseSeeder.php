@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         }
         // Cards
         for ($i = 0; $i < 5; ++$i) {
-            GameComponent::factory()
+            GameComponent::factory(['orientation' => 5])
                 ->for($game)
                 ->for(Card::factory(), 'gameComponentable')
                 ->create();

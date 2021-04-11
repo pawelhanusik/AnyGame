@@ -6,7 +6,7 @@
       top: ${positionY}px;
       width: ${width}px;
       height: ${height}px;
-      
+      visibility: ${hidden ? 'hidden' : 'visible'};
     `"
     @mouseleave="onMouseLeave"
     @mouseenter="onMouseEnter"
@@ -25,12 +25,12 @@
         transition: all linear ${animationStepTime}ms;
       `"
     >
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveEditRights ? 'green' : 'black') }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
     </div>
   </div>
 </template>
@@ -49,6 +49,7 @@ export default {
       rotationZ: 0,
       positionX: 500,
       positionY: 100,
+      hidden: false,
       // -----------------
       isClicked: false,
       moveStartX: 0,
@@ -58,7 +59,8 @@ export default {
       recentChanges: {},
       lastSendTimestamp: 0,
       haveEditRights: false,
-      shouldAbandonEditRights: false
+      shouldAbandonEditRights: false,
+      haveOwnership: false
     }
   },
   props: {
@@ -162,12 +164,38 @@ export default {
       default: 200
     }
   },
+  computed: {
+    isOnServerSide() {
+      return (
+        !this.haveOwnership
+        && this.gameID
+        && this.componentID
+      )
+    },
+    canEdit() {
+      return (
+        this.haveEditRights
+        || !this.isOnServerSide
+      )
+    }
+  },
   watch: {
     positionX(val) {
       this.sendChange('posX', val)
     },
     positionY(val) {
       this.sendChange('posY', val)
+      if (val > document.body.offsetHeight / 2) {
+        // HAND
+        if (!this.haveOwnership) {
+          this.askForOwnership()
+        }
+      } else {
+        // TABLE
+        if (this.haveOwnership) {
+          this.abandonOwnership()
+        }
+      }
     }
   },
 
@@ -209,7 +237,7 @@ export default {
         this.isClicked
         && Date.now() - this.mouseDownTimestamp < 100
       ) {
-        if (this.gameID && this.componentID) {
+        if (this.isOnServerSide) {
           // server event (if have rights)
           if (this.haveEditRights) {
             this.sendChange('event', 'action', true)
@@ -237,10 +265,7 @@ export default {
     onMouseMove(evt) {
       if (
         this.isClicked
-        && (
-          this.haveEditRights
-          || !this.gameID
-        )
+        && this.canEdit
       ) {
         this.positionX = evt.clientX - this.moveStartX
         this.positionY = evt.clientY - this.moveStartY
@@ -248,7 +273,7 @@ export default {
     },
     // ---------------------------
     askForEditRights() {
-      if (!this.gameID || !this.componentID) {
+      if (!this.isOnServerSide) {
         return
       }
       axios.get(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
@@ -259,7 +284,7 @@ export default {
       }).catch((err) => {})
     },
     abandonEditRights() {
-      if (!this.gameID || !this.componentID) {
+      if (!this.isOnServerSide) {
         return
       }
       this.haveEditRights = false
@@ -269,7 +294,25 @@ export default {
         }
       }).catch((err) => {})
     },
+    askForOwnership() {
+      if (!this.isOnServerSide) {
+        return
+      }
+      axios.get(`/${this.gameID}/components/${this.componentID}/ownership`).then((res) => {
+        if (res?.data?.granted === true) {
+          this.haveOwnership = true
+        }
+      }).catch((err) => {})
+    },
+    abandonOwnership() {
+      this.haveOwnership = false
+      axios.delete(`/${this.gameID}/components/${this.componentID}/ownership`).then((res) => {}).catch((err) => {})
+    },
     sendChange(key, value, now = false) {
+      if (this.haveOwnership) {
+        this.recentChanges = {}
+        return
+      }
       if (!this.haveEditRights) {
         return
       }
