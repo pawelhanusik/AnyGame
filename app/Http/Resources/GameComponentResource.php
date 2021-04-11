@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Card;
 use App\Models\Dice;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,6 +24,8 @@ class GameComponentResource extends JsonResource
                 switch(true) {
                     case $this->gameComponentable instanceof Dice:
                         return new DiceResource($this->gameComponentable);
+                    case $this->gameComponentable instanceof Card:
+                        return new CardResource($this->gameComponentable);
                     default:
                         return null;
                 }

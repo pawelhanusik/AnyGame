@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Card;
 use App\Models\Dice;
 use App\Models\Game;
 use App\Models\GameComponent;
@@ -18,10 +19,18 @@ class DatabaseSeeder extends Seeder
     {
         $game = Game::factory()->create();
 
-        for ($i = 0; $i < 10; ++$i) {
+        // Dices
+        for ($i = 0; $i < 5; ++$i) {
             GameComponent::factory()
                 ->for($game)
                 ->for(Dice::factory(), 'gameComponentable')
+                ->create();
+        }
+        // Cards
+        for ($i = 0; $i < 5; ++$i) {
+            GameComponent::factory()
+                ->for($game)
+                ->for(Card::factory(), 'gameComponentable')
                 ->create();
         }
     }

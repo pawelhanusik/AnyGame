@@ -1,6 +1,8 @@
 <template>
   <box
     ref="box"
+    :componentID="componentID"
+    :gameID="gameID"
 
     :width="90"
     :height="160"
@@ -36,6 +38,15 @@ export default {
     }
   },
   props: {
+    componentID: {
+      type: Number,
+      required: true
+    },
+    gameID: {
+      type: Number,
+      required: true
+    },
+
     suit: {
       type: String,
       required: true
@@ -60,11 +71,11 @@ export default {
   methods: {
     flip(orientation) {
       let ry = null
-      if (this.$$refs.box.rotationY == 0 && orientation == 6) {
-        ry = 180
-      }
-      if (this.$$refs.box.rotationY == 180 && orientation == 1) {
+      if (this.$refs.box.rotationY == 180 && orientation == 0) {
         ry = 0
+      }
+      if (this.$refs.box.rotationY == 0 && orientation == 5) {
+        ry = 180
       }
       
       if (ry !== null) {
@@ -77,6 +88,21 @@ export default {
           this.$refs.box.scale /= 1.5;
         }, 1 * this.$refs.box.animationStepTime)
       }
+    },
+
+    updateParams(params) {
+      if (!Array.isArray(params) || params.length < 3 ) {
+        console.error("updateParams() extected 3 items in params array, less given")
+        return
+      }
+
+      if (params[0]) this.$refs.box.positionX = params[0]
+      if (params[1]) this.$refs.box.positionY = params[1]
+      
+      const orientation = params[2]
+      if (orientation) this.flip(orientation)
+
+      this.$refs.box.recentChanges = {}
     }
   }
 }

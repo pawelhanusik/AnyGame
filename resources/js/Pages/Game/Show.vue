@@ -30,11 +30,15 @@
 <script>
 import Vue from 'vue'
 import Dice from '@/components/Dice.vue'
+import Card from '@/components/Card.vue'
+
 const DiceClass = Vue.extend(Dice)
+const CardClass = Vue.extend(Card)
 
 export default {
   components: {
-    Dice
+    Dice,
+    Card
   },
   data() {
     return {
@@ -96,6 +100,25 @@ export default {
             newDice.updateParams([null, null, parseInt(c.orientation) ?? null])
             
             this.gameComponents[c.id] = newDice
+            break
+          case 'App\\Models\\Card':
+            const newCard = new CardClass({
+              propsData: {
+                componentID: parseInt(c.id),
+                gameID: parseInt(c.game_id),
+                
+                posX: parseInt(c.posX),
+                posY: parseInt(c.posY),
+
+                suit: c.component.suit,
+                rank: c.component.rank,
+                startReversed: (c.orientation != 0)
+              }
+            })
+            newCard.$mount()
+            gameComponentsContainer.appendChild(newCard.$el)
+            
+            this.gameComponents[c.id] = newCard
             break
         }
       }

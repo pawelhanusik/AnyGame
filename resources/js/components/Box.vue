@@ -261,7 +261,7 @@ export default {
         let payload = {}
         payload[key] = value
         axios.put(`/${this.gameID}/components/${this.componentID}`, payload).then((res) => {
-          if (res.data?.orientation) {
+          if (typeof(res.data?.orientation) !== 'undefined') {
             this.$emit('action', res.data.orientation)
           }
         })
@@ -270,7 +270,7 @@ export default {
       if (Date.now() - this.lastSendTimestamp > delayBetweenRequests) {
         if (Object.keys(this.recentChanges).length > 0) {
           axios.put(`/${this.gameID}/components/${this.componentID}`, this.recentChanges).then((res) => {
-            if (res.data?.orientation) {
+            if (typeof(res.data?.orientation) !== 'undefined') {
               this.$emit('action', res.data.orientation)
             }
             
