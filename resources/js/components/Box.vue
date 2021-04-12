@@ -25,12 +25,12 @@
         transition: all linear ${animationStepTime}ms;
       `"
     >
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
-      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ (haveOwnership ? 'yellow' : (haveEditRights ? 'green' : 'black')) }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${front} ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ borderColor }; pointer-events: none; position: absolute; transform:                 translateZ(${thickness/2}px           )`" > {{textFront}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${top}   ; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ borderColor }; pointer-events: none; position: absolute; transform: rotateX(90deg)  translateZ(${thickness/2}px           )`" > {{textTop}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${left}  ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ borderColor }; pointer-events: none; position: absolute; transform: rotateY(-90deg) translateZ(${thickness/2}px           )`" > {{textLeft}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${right} ; background-size: cover; width: ${thickness}px; height: ${height}px   ; border: 2px solid ${ borderColor }; pointer-events: none; position: absolute; transform: rotateY(90deg)  translateZ(${width - thickness/2}px   )`" > {{textRight}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${bottom}; background-size: cover; width: ${width}px    ; height: ${thickness}px; border: 2px solid ${ borderColor }; pointer-events: none; position: absolute; transform: rotateX(-90deg) translateZ(${height - thickness/2}px  )`" > {{textBottom}} </div>
+      <div class="d-flex justify-content-center flex-wrap align-content-center" :style="`background: ${back}  ; background-size: cover; width: ${width}px    ; height: ${height}px   ; border: 2px solid ${ borderColor }; pointer-events: none; position: absolute; transform: rotateY(180deg) translateZ(${thickness/2}px           )`" > {{textBack}} </div>
     </div>
   </div>
 </template>
@@ -58,6 +58,7 @@ export default {
       // -----------------
       recentChanges: {},
       lastSendTimestamp: 0,
+      hasEditor: false,
       haveEditRights: false,
       shouldAbandonEditRights: false,
       haveOwnership: false
@@ -177,6 +178,19 @@ export default {
         this.haveEditRights
         || !this.isOnServerSide
       )
+    },
+
+    borderColor() {
+      if (this.haveOwnership) {
+        return 'yellow'
+      }
+      if (this.haveEditRights) {
+        return 'green'
+      }
+      if (this.hasEditor) {
+        return 'red'
+      }
+      return 'black'
     }
   },
   watch: {
@@ -258,6 +272,7 @@ export default {
       this.isMouseOver = false
     },
     onMouseEnter() {
+      this.shouldAbandonEditRights = false
       this.askForEditRights()
 
       this.isMouseOver = true
@@ -279,6 +294,7 @@ export default {
       axios.get(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
         if (res?.data?.granted === true) {
           this.haveEditRights = true
+          this.hasEditor = true
           this.shouldAbandonEditRights = false
         }
       }).catch((err) => {})
@@ -288,6 +304,7 @@ export default {
         return
       }
       this.haveEditRights = false
+      this.hasEditor = false
       axios.delete(`/${this.gameID}/components/${this.componentID}/editrights`).then((res) => {
         if (res?.data?.abandoned === true) {
           this.shouldAbandonEditRights = false

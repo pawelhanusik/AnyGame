@@ -33,7 +33,11 @@ class GameComponentResource extends JsonResource
             
             'posX' => $this->pos_x,
             'posY' => $this->pos_y,
-            'orientation' => $this->orientation
+            'orientation' => $this->orientation,
+            
+            'is_owner' => ($this->owner_id == auth()->guard('player')->id()),
+            'is_editor' => ($this->editor_id == auth()->guard('player')->id()),
+            'has_editor' => ($this->editor_id !== null)
         ];
     }
 }

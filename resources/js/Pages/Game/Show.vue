@@ -68,13 +68,16 @@ export default {
           console.error("Cannot find component to update")
           return
         }
-
-        component2update.updateParams([
-          parseInt(updatedValues['posX']) ?? null,
-          parseInt(updatedValues['posY']) ?? null,
-          parseInt(updatedValues['orientation']) ?? null,
-          (updatedValues['visibility'] === 'hidden')
-        ])
+        
+        component2update.updateParams(
+          updatedValues['posX'] ?? null,
+          updatedValues['posY'] ?? null,
+          updatedValues['orientation'] ?? null,
+          (updatedValues['visibility'] === 'hidden'),
+          null,
+          null,
+          updatedValues['hasEditor'] ?? null
+        )
       })
   },
   destroyed() {
@@ -98,7 +101,15 @@ export default {
             newDice.$mount()
             gameComponentsContainer.appendChild(newDice.$el)
 
-            newDice.updateParams([null, null, parseInt(c.orientation) ?? null, null])
+            newDice.updateParams(
+              null,
+              null,
+              c.orientation ?? null,
+              null,
+              c.is_owner ?? null,
+              c.is_editor ?? null,
+              c.has_editor ?? null
+            )
             
             this.gameComponents[c.id] = newDice
             break
@@ -119,6 +130,16 @@ export default {
             newCard.$mount()
             gameComponentsContainer.appendChild(newCard.$el)
             
+            newCard.updateParams(
+              null,
+              null,
+              null,
+              null,
+              c.is_owner ?? null,
+              c.is_editor ?? null,
+              c.has_editor ?? null
+            )
+
             this.gameComponents[c.id] = newCard
             break
         }

@@ -102,6 +102,9 @@ class GameComponentController extends Controller
         
         $gameComponent->editor_id = auth()->guard('player')->id();
         $gameComponent->save();
+
+        broadcast(new GameComponentUpdateEvent($game, $gameComponent, ['hasEditor' => true]))->toOthers();
+
         return ['granted' => true];
     }
     /**
@@ -118,6 +121,9 @@ class GameComponentController extends Controller
         }
         $gameComponent->editor_id = null;
         $gameComponent->save();
+
+        broadcast(new GameComponentUpdateEvent($game, $gameComponent, ['hasEditor' => false]))->toOthers();
+
         return ['abandoned' => true];
     }
     /**

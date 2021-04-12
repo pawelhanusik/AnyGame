@@ -96,19 +96,14 @@ export default {
       )
     },
 
-    updateParams(params) {
-      if (!Array.isArray(params) || params.length < 4 ) {
-        console.error("updateParams() extected 4 items in params array, less given")
-        return
-      }
-
-      if (params[0]) this.$refs.box.positionX = params[0]
-      if (params[1]) this.$refs.box.positionY = params[1]
-      
-      const orientation = params[2]
-      if (orientation) this.flip(orientation)
-
-      if (params[3] !== null) this.$refs.box.hidden = params[3]
+    updateParams(posX = null, posY = null, orientation = null, isHidden = null, isOwner = null, isEditor = null, hasEditor = null) {
+      if (posX !== null) this.$refs.box.positionX = posX
+      if (posY !== null) this.$refs.box.positionY = posY
+      if (orientation !== null) this.flip(orientation)
+      if (isHidden !== null) this.$refs.box.hidden = isHidden
+      if (isOwner !== null) this.$refs.box.haveOwnership = isOwner
+      if (isEditor !== null) this.$refs.box.haveEditRights = isEditor
+      if (hasEditor !== null) this.$refs.box.hasEditor = hasEditor
 
       this.$refs.box.recentChanges = {}
     }
