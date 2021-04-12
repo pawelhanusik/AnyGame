@@ -153,37 +153,33 @@ export default {
   methods: {
     // actions
     roll(orientation) {
-      //console.log("orientation", orientation)
       const allPosiibleRotations = rotationFromOrientationTable[orientation]
       let [rx, ry, rz] = allPosiibleRotations[
         Math.floor(Math.random() * allPosiibleRotations.length)
       ]
-      //console.log("DICE roti: ", rx, ry, rz)
-      /*if (rx == 0) rx = 4
+
+      rx -= (this.$refs.box.rotationX / 90) % 4
+      ry -= (this.$refs.box.rotationY / 90) % 4
+      rz -= (this.$refs.box.rotationZ / 90) % 4
+
+      if (rx == 0) rx = 4
       if (ry == 0) ry = 4
-      if (rz == 0) rz = 4*/
+      if (rz == 0) rz = 4
+
       rx *= 90
       ry *= 90
       rz *= 90
-      /*
-      console.log("DICE rotations: ", rx, ry, rz)
-      console.log("DICE current: ", this.$refs.box.rotationX, this.$refs.box.rotationY, this.$refs.box.rotationZ)
-      rx = rx - this.$refs.box.rotationX % 360
-      ry = rx - this.$refs.box.rotationY % 360
-      rz = rx - this.$refs.box.rotationZ % 360
-      console.log("DICE rotations after tweak: ", rx, ry, rz)
-      */
 
       this.animationAddStep(() => {
-        this.$refs.box.rotationX = rx/2
-        this.$refs.box.rotationY = ry/2
-        this.$refs.box.rotationZ = rz/2
+        this.$refs.box.rotationX += rx/2
+        this.$refs.box.rotationY += ry/2
+        this.$refs.box.rotationZ += rz/2
         this.$refs.box.scale *= 1.5;
       })
       this.animationAddStep(() => {
-        this.$refs.box.rotationX = rx
-        this.$refs.box.rotationY = ry
-        this.$refs.box.rotationZ = rz
+        this.$refs.box.rotationX += rx/2
+        this.$refs.box.rotationY += ry/2
+        this.$refs.box.rotationZ += rz/2
         this.$refs.box.scale /= 1.5;
       })
       this.animationStart()
