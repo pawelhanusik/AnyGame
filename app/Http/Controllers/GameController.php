@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\PlayerJoinEvent;
-use App\Events\TestEvent;
 use App\Models\Game;
 use App\Models\Player;
 use Illuminate\Http\Request;
@@ -120,13 +118,13 @@ class GameController extends Controller
             /** @var \Illuminate\Contracts\Auth\SessionGuard */
             $playerAuthGuard = auth()->guard('player');
             $playerAuthGuard->login($player);
+
+            $game->addComponentsForNewPlayer($player);
         } else if ($isUserAuthenticated){
             $player->touch();
         } else {
             return;
         }
-        
-        PlayerJoinEvent::dispatch($player);
 
         return inertia('Game/Show', [
             'nick' => $nick,

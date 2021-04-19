@@ -37,7 +37,8 @@ class GameComponentResource extends JsonResource
             
             'is_owner' => ($this->owner_id == auth()->guard('player')->id()),
             'is_editor' => ($this->editor_id == auth()->guard('player')->id()),
-            'has_editor' => ($this->editor_id !== null)
+            'has_editor' => ($this->editor_id !== null),
+            'visibility' => (($this->owner_id !== null && $this->owner_id != auth()->guard('player')->id()) ? 'hidden' : 'visible'),
         ];
     }
 }

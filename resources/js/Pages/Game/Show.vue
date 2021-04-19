@@ -95,9 +95,6 @@ export default {
           updatedValues['hasEditor'] ?? null
         )
       })
-      .listen('PlayerJoinEvent', (e) => {
-        this.addPlayer(e.player)
-      })
   },
   destroyed() {
     Echo.leave()
@@ -168,7 +165,7 @@ export default {
           c.is_owner ? lastAddedHandComponentPosX : null,
           c.is_owner ? lastAddedHandComponentPosY : null,
           c.orientation ?? null,
-          null,
+          (c.visibility === 'hidden'),
           c.is_owner ?? null,
           c.is_editor ?? null,
           c.has_editor ?? null
