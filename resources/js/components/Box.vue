@@ -247,6 +247,9 @@ export default {
       }
     },
     onMouseUp() {
+      if (!this.isMouseOver) {
+        this.shouldAbandonEditRights = true
+      }
       if (
         this.isClicked
         && Date.now() - this.mouseDownTimestamp < 100
@@ -267,7 +270,9 @@ export default {
       this.moveStartY = 0
     },
     onMouseLeave() {
-      this.shouldAbandonEditRights = true
+      if (!this.isClicked) {
+        this.shouldAbandonEditRights = true
+      }
 
       this.isMouseOver = false
     },
@@ -278,7 +283,7 @@ export default {
       this.isMouseOver = true
     },
     onMouseMove(evt) {
-      if (this.haveEditRights && this.isOnServerSide) {
+      if (!this.isClicked && this.haveEditRights && this.isOnServerSide) {
         if (
           evt.clientX < this.positionX
           || evt.clientX > this.positionX + this.width
