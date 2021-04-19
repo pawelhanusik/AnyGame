@@ -278,6 +278,16 @@ export default {
       this.isMouseOver = true
     },
     onMouseMove(evt) {
+      if (this.haveEditRights && this.isOnServerSide) {
+        if (
+          evt.clientX < this.positionX
+          || evt.clientX > this.positionX + this.width
+          || evt.clientY < this.positionY
+          || evt.clientY > this.positionY + this.height
+        ) {
+          this.abandonEditRights()
+        }
+      }
       if (
         this.isClicked
         && this.canEdit
