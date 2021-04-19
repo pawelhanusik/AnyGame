@@ -17,6 +17,8 @@ class CreateGamesTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('password')->nullable();
+            $table->integer('hand_dices')->default(0);
+            $table->integer('hand_cards')->default(0);
             $table->timestamps();
         });
     }

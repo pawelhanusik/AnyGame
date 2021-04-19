@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PlayerJoinEvent;
 use App\Events\TestEvent;
 use App\Models\Game;
 use App\Models\Player;
@@ -21,7 +22,12 @@ class GameController extends Controller
     }
 
     public function create() {
-        return inertia('Game/Create');
+        return inertia('Game/Create', [
+            'componentTyoes' => [
+                'dices',
+                'cards'
+            ]
+        ]);
     }
 
     /**
@@ -33,7 +39,9 @@ class GameController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'max:50']
+            'name' => 'required|max:50',
+            'hand_dices' => 'integer',
+            'hand_cards' => 'integer'
         ]);
 
         $password = "";
@@ -46,6 +54,10 @@ class GameController extends Controller
         $data['password'] = $password;
 
         $game = Game::create($data);
+        $game->addInitialComponents(
+            $request['table_dices'] ?? 0,
+            $request['table_cards'] ?? 0
+        );
         return inertia('Game/Store', [
             'name' => $game->name,
             'url' => $game->path(true),
@@ -75,9 +87,9 @@ class GameController extends Controller
         }
         
         $nick = request('nick');
-        $tmpPlayer = Player::where('game_id', $game->id)->where('nick', $nick)->first();
-        $playerExists = ($tmpPlayer !== null);
-        $isUserAuthenticated = ($playerExists && auth()->guard('player')->id() === $tmpPlayer->id);
+        $player = Player::where('game_id', $game->id)->where('nick', $nick)->first();
+        $playerExists = ($player !== null);
+        $isUserAuthenticated = ($playerExists && auth()->guard('player')->id() === $player->id);
         if ($playerExists && !$isUserAuthenticated) {
             return inertia('Game/Join', [
                 'game' => $game,
@@ -109,11 +121,13 @@ class GameController extends Controller
             $playerAuthGuard = auth()->guard('player');
             $playerAuthGuard->login($player);
         } else if ($isUserAuthenticated){
-            $tmpPlayer->touch();
+            $player->touch();
         } else {
             return;
         }
         
+        PlayerJoinEvent::dispatch($player);
+
         return inertia('Game/Show', [
             'nick' => $nick,
             'game' => $game,

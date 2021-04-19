@@ -1,16 +1,6 @@
 <template>
   <div>
     <div class="row">
-      <div class="col-md-2" style="background: #cccccc; border-right: 1px solid black; min-height: 100vh;">
-        <!-- STATUS -->
-        <h2 class="text-center mt-3"> {{ game.name }} </h2>
-        <hr/>
-        <h4 class="ml-3"> Players: </h4>
-        <ul>
-          <li v-for="player in players" :key="player.id" > {{player.nick}} </li>
-        </ul>
-        <!-- ====== -->
-      </div>
       <div class="col-md-10">
         <div class="row h-100 flex-column">
           <div class="col-md-6 mw-100" style="background: #efefef; border-bottom: 1px solid black;">
@@ -20,6 +10,16 @@
             <!-- HAND -->
           </div>
         </div>
+      </div>
+      <div class="col-md-2" style="background: #cccccc; border-right: 1px solid black; min-height: 100vh;">
+        <!-- STATUS -->
+        <h2 class="text-center mt-3"> {{ game.name }} </h2>
+        <hr/>
+        <h4 class="ml-3"> Players: </h4>
+        <ul>
+          <li v-for="player in players" :key="player.id" > {{player.nick}} </li>
+        </ul>
+        <!-- ====== -->
       </div>
     </div>
 
@@ -87,6 +87,8 @@ export default {
     createComponents(components) {
       const gameComponentsContainer = this.$refs['game_components_container']
 
+      let lastAddedHandComponentPosX = 100;
+      let lastAddedHandComponentPosY = document.body.offsetHeight / 2 + 100;
       for (let c of components) {
         switch(c.component_type) {
           case 'App\\Models\\Dice':
@@ -101,9 +103,16 @@ export default {
             newDice.$mount()
             gameComponentsContainer.appendChild(newDice.$el)
 
+            if (c.is_owner) {
+              lastAddedHandComponentPosX += 10
+              if (lastAddedHandComponentPosX > 500) {
+                lastAddedHandComponentPosX = 100
+                lastAddedHandComponentPosY += 10
+              }
+            }
             newDice.updateParams(
-              null,
-              null,
+              c.is_owner ? lastAddedHandComponentPosX : null,
+              c.is_owner ? lastAddedHandComponentPosY : null,
               c.orientation ?? null,
               null,
               c.is_owner ?? null,
@@ -130,9 +139,16 @@ export default {
             newCard.$mount()
             gameComponentsContainer.appendChild(newCard.$el)
             
+            if (c.is_owner) {
+              lastAddedHandComponentPosX += 10
+              if (lastAddedHandComponentPosX > 500) {
+                lastAddedHandComponentPosX = 100
+                lastAddedHandComponentPosY += 10
+              }
+            }
             newCard.updateParams(
-              null,
-              null,
+              c.is_owner ? lastAddedHandComponentPosX : null,
+              c.is_owner ? lastAddedHandComponentPosY : null,
               null,
               null,
               c.is_owner ?? null,

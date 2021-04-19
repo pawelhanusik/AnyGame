@@ -38,7 +38,7 @@
 <script>
 
 let sendChangeIntervalID = null
-const delayBetweenRequests = 100
+const delayBetweenRequests = 200
 
 export default {
   data() {
