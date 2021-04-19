@@ -131,7 +131,6 @@ class GameController extends Controller
         return inertia('Game/Show', [
             'nick' => $nick,
             'game' => $game,
-            'players' => Player::where('game_id', $game->id)->get()
         ]);
     }
 

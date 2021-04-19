@@ -11,7 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PlayerJoinEvent
+class PlayerJoinEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -34,6 +34,6 @@ class PlayerJoinEvent
      */
     public function broadcastOn()
     {
-        return new PresenceChannel('game-channel.' . $this->gameID);
+        return new PresenceChannel('game-channel.' . $this->player->game_id);
     }
 }

@@ -53,7 +53,10 @@ export default {
       type: Object
     },
     players: {
-      type: Array
+      type: Array,
+      default: () => {
+        return []
+      }
     }
   },
   created() {
@@ -61,6 +64,17 @@ export default {
       this.createComponents(res.data.data)
     })
     Echo.join(`game-channel.${this.game.id}`)
+      .here((users) => {
+        for (let u of users) {
+          this.addPlayer(u)
+        }
+      })
+      .joining((user) => {
+        this.addPlayer(user)
+      })
+      .leaving((user) => {
+        this.removePlayer(user)
+      })
       .listen('GameComponentUpdateEvent', (e) => {
         const updatedValues = e.updatedValues
         const component2update = this.gameComponents[e.componentID]
@@ -79,11 +93,29 @@ export default {
           updatedValues['hasEditor'] ?? null
         )
       })
+      .listen('PlayerJoinEvent', (e) => {
+        this.addPlayer(e.player)
+      })
   },
   destroyed() {
     Echo.leave()
   },
   methods: {
+    addPlayer(player) {
+      for (let p of this.players) {
+        if (p.id == player.id) {
+          return
+        }
+      }
+      this.players.push(player)
+    },
+    removePlayer(player) {
+      for (let p of this.players) {
+        if (p.id == player.id) {
+          this.players.splice(this.players.indexOf(p), 1)
+        }
+      }
+    },
     createComponents(components) {
       const gameComponentsContainer = this.$refs['game_components_container']
 
