@@ -79,7 +79,9 @@ export default {
         const updatedValues = e.updatedValues
         const component2update = this.gameComponents[e.componentID]
         if (!component2update) {
-          console.error("Cannot find component to update")
+          axios.get(`/${this.game.id}/components/${e.componentID}`).then((res) => {
+            this.createComponents([res.data.data])
+          })
           return
         }
         
@@ -122,9 +124,10 @@ export default {
       let lastAddedHandComponentPosX = 100;
       let lastAddedHandComponentPosY = document.body.offsetHeight / 2 + 100;
       for (let c of components) {
+        let newComponent = null
         switch(c.component_type) {
           case 'App\\Models\\Dice':
-            const newDice = new DiceClass({
+            newComponent = new DiceClass({
               propsData: {
                 componentID: parseInt(c.id),
                 gameID: parseInt(c.game_id),
@@ -132,34 +135,12 @@ export default {
                 posY: parseInt(c.posY)
               }
             })
-            newDice.$mount()
-            gameComponentsContainer.appendChild(newDice.$el)
-
-            if (c.is_owner) {
-              lastAddedHandComponentPosX += 10
-              if (lastAddedHandComponentPosX > 500) {
-                lastAddedHandComponentPosX = 100
-                lastAddedHandComponentPosY += 10
-              }
-            }
-            newDice.updateParams(
-              c.is_owner ? lastAddedHandComponentPosX : null,
-              c.is_owner ? lastAddedHandComponentPosY : null,
-              c.orientation ?? null,
-              null,
-              c.is_owner ?? null,
-              c.is_editor ?? null,
-              c.has_editor ?? null
-            )
-            
-            this.gameComponents[c.id] = newDice
             break
           case 'App\\Models\\Card':
-            const newCard = new CardClass({
+            newComponent = new CardClass({
               propsData: {
                 componentID: parseInt(c.id),
                 gameID: parseInt(c.game_id),
-                
                 posX: parseInt(c.posX),
                 posY: parseInt(c.posY),
 
@@ -168,29 +149,32 @@ export default {
                 startReversed: (c.orientation != 0)
               }
             })
-            newCard.$mount()
-            gameComponentsContainer.appendChild(newCard.$el)
-            
-            if (c.is_owner) {
-              lastAddedHandComponentPosX += 10
-              if (lastAddedHandComponentPosX > 500) {
-                lastAddedHandComponentPosX = 100
-                lastAddedHandComponentPosY += 10
-              }
-            }
-            newCard.updateParams(
-              c.is_owner ? lastAddedHandComponentPosX : null,
-              c.is_owner ? lastAddedHandComponentPosY : null,
-              null,
-              null,
-              c.is_owner ?? null,
-              c.is_editor ?? null,
-              c.has_editor ?? null
-            )
-
-            this.gameComponents[c.id] = newCard
             break
         }
+        if (newComponent === null) {
+          continue
+        }
+        newComponent.$mount()
+        gameComponentsContainer.appendChild(newComponent.$el)
+
+        if (c.is_owner) {
+          lastAddedHandComponentPosX += 10
+          if (lastAddedHandComponentPosX > 500) {
+            lastAddedHandComponentPosX = 100
+            lastAddedHandComponentPosY += 10
+          }
+        }
+        newComponent.updateParams(
+          c.is_owner ? lastAddedHandComponentPosX : null,
+          c.is_owner ? lastAddedHandComponentPosY : null,
+          c.orientation ?? null,
+          null,
+          c.is_owner ?? null,
+          c.is_editor ?? null,
+          c.has_editor ?? null
+        )
+        
+        this.gameComponents[c.id] = newComponent
       }
     }
   }
