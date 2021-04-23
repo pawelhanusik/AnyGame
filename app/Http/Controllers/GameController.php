@@ -71,7 +71,7 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
-        $password = "";
+        $password = null;
         if (request()->has('p')) {
             $password = request('p');
         }
