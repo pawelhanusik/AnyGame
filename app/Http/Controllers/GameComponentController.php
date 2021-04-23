@@ -23,50 +23,6 @@ class GameComponentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Game  $game
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request, Game $game)
-    {
-        $validated = $request->validate([
-            'type' => 'required|string',
-
-            'posX' => 'required|integer',
-            'posY' => 'required|integer',
-            'rotX' => 'required|integer',
-            'rotY' => 'required|integer',
-            'rotZ' => 'required|integer'
-        ]);
-
-        $component = new GameComponent();
-        $component->game_id = $game->id;
-        
-        $component->pos_x = $validated['posX'];
-        $component->pos_y = $validated['posY'];
-        $component->rot_x = $validated['rotX'];
-        $component->rot_y = $validated['rotY'];
-        $component->rot_z = $validated['rotZ'];
-        
-        $componentable = null;
-        if (strtolower($validated['type']) == 'dice') {
-            $componentable = Dice::create();
-        }
-
-        if ($componentable === null) {
-            abort(422);
-            return null;
-        }
-
-        $component->gameComponentable()->associate($componentable);
-        $component->save();
-        
-        return null;
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  \App\Models\Game  $game
@@ -200,25 +156,5 @@ class GameComponentController extends Controller
         broadcast(new GameComponentUpdateEvent($game, $gameComponent, $updatedValues))->toOthers();
 
         return $updatedValues;
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Game  $game
-     * @param  \App\Models\GameComponent  $gameComponent
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Game $game, GameComponent $gameComponent)
-    {
-        if ($gameComponent->game->id !== $game->id) {
-            abort(404, 'Not found');
-            return null;
-        }
-
-        $gameComponent->gameComponentable()->delete();
-        $gameComponent->delete();
-
-        return null;
     }
 }
