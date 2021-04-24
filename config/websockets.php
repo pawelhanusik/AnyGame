@@ -118,6 +118,8 @@ return [
          */
         'local_cert' => env('LARAVEL_WEBSOCKETS_SSL_LOCAL_CERT', null),
 
+        'capath' => env('LARAVEL_WEBSOCKETS_SSL_CA', null),
+
         /*
          * Path to local private key file on filesystem in case of separate files for
          * certificate (local_cert) and private key.
@@ -128,6 +130,8 @@ return [
          * Passphrase for your local_cert file.
          */
         'passphrase' => env('LARAVEL_WEBSOCKETS_SSL_PASSPHRASE', null),
+
+        'allow_self_signed' => env('APP_ENV') !== 'production',
     ],
 
     /*
