@@ -85,11 +85,15 @@ export default {
           return
         }
         
+        let isVisible = null
+        if (updatedValues['visibility'] !== null) {
+          isVisible = (updatedValues['visibility'] === 'hidden')
+        }
         component2update.updateParams(
           updatedValues['posX'] ?? null,
           updatedValues['posY'] ?? null,
           updatedValues['orientation'] ?? null,
-          (updatedValues['visibility'] === 'hidden'),
+          isVisible,
           null,
           null,
           updatedValues['hasEditor'] ?? null
@@ -161,11 +165,15 @@ export default {
             lastAddedHandComponentPosY += 10
           }
         }
+        let isVisible = null
+        if (c.visibility !== null) {
+          isVisible = (c.visibility === 'hidden')
+        }
         newComponent.updateParams(
           c.is_owner ? lastAddedHandComponentPosX : null,
           c.is_owner ? lastAddedHandComponentPosY : null,
           c.orientation ?? null,
-          (c.visibility === 'hidden'),
+          isVisible,
           c.is_owner ?? null,
           c.is_editor ?? null,
           c.has_editor ?? null
