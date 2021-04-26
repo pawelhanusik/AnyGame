@@ -137,8 +137,8 @@ class GameComponentController extends Controller
      */
     public function update(Request $request, Game $game, GameComponent $gameComponent)
     {
-        if ($gameComponent->owner !== null) {
-            // component is not on table - can't update
+        if ($gameComponent->owner !== null && $gameComponent->owner->id !== auth()->guard('player')->id()) {
+            // component is not on table & the player is not the owner - can't update
             abort(404, 'Not found');
             return null;
         }

@@ -1,12 +1,12 @@
 <template>
   <div
+    v-if="!hidden"
     :style="`
       position: absolute;
       left: ${positionX}px;
       top: ${positionY}px;
       width: ${width}px;
       height: ${height}px;
-      visibility: ${hidden ? 'hidden' : 'visible'};
     `"
     @mouseleave="onMouseLeave"
     @mouseenter="onMouseEnter"
@@ -39,6 +39,33 @@
 
 let sendChangeIntervalID = null
 const delayBetweenRequests = 200
+
+const orientationFromRotationTable = [
+  [
+    [0, 0, 0, 0],
+    [2, 4, 3, 1],
+    [5, 5, 5, 5],
+    [3, 1, 2, 4]
+  ],
+  [
+    [4, 3, 1, 2],
+    [4, 3, 1, 2],
+    [4, 3, 1, 2],
+    [4, 3, 1, 2]
+  ],
+  [
+    [5, 5, 5, 5],
+    [3, 1, 2, 4],
+    [0, 0, 0, 0],
+    [2, 4, 3, 1]
+  ],
+  [
+    [1, 2, 4, 3],
+    [1, 2, 4, 3],
+    [1, 2, 4, 3],
+    [1, 2, 4, 3]
+  ]
+]
 
 export default {
   data() {
@@ -191,6 +218,14 @@ export default {
         return 'red'
       }
       return 'black'
+    },
+
+    orientationFromRotation() {
+      const rx = Math.round((this.rotationX % 360) / 90) % 4
+      const ry = Math.round((this.rotationY % 360) / 90) % 4
+      const rz = Math.round((this.rotationZ % 360) / 90) % 4
+      
+      return orientationFromRotationTable[rx][ry][rz]
     }
   },
   watch: {
@@ -338,7 +373,24 @@ export default {
     },
     abandonOwnership() {
       this.haveOwnership = false
-      axios.delete(`/${this.gameID}/components/${this.componentID}/ownership`).then((res) => {}).catch((err) => {})
+      this.sendAllProperties().then((res) => {
+        axios.delete(`/${this.gameID}/components/${this.componentID}/ownership`).then((res) => {}).catch((err) => {})
+      })
+    },
+    async sendAllProperties() {
+      return new Promise((resolve, reject) => {
+        const payload = {
+          posX: this.positionX,
+          posY: this.positionY,
+          orientation: this.orientationFromRotation
+        }
+        console.log("AAA", payload)
+        axios.put(`/${this.gameID}/components/${this.componentID}`, payload).then((res) => {
+          resolve()
+        }).catch((err) => {
+          reject()
+        })
+      })
     },
     sendChange(key, value, now = false) {
       if (this.haveOwnership) {

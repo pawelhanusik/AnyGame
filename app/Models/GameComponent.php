@@ -38,6 +38,10 @@ class GameComponent extends Model
             $updatedValues['posY'] = $editData['posY'];
             $this->pos_y = $editData['posY'];
         }
+        if (key_exists('orientation', $editData)) {
+            $updatedValues['orientation'] = $editData['orientation'];
+            $this->orientation = $editData['orientation'];
+        }
         $this->save($updatedValues);
         
         // update gameComponentable
