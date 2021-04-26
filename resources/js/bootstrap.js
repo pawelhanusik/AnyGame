@@ -40,6 +40,7 @@ window.Echo = new Echo({
     forceTLS: false,
     wsHost: process.env.MIX_LARAVEL_WEBSOCKETS_HOST,
     wsPort: process.env.MIX_LARAVEL_WEBSOCKETS_PORT,
+	wssPort: process.env.MIX_LARAVEL_WEBSOCKETS_PORT,
     disableStats: true,
     authEndpoint: `broadcasting/auth`,
     auth: {
