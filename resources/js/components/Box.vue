@@ -384,7 +384,6 @@ export default {
           posY: this.positionY,
           orientation: this.orientationFromRotation
         }
-        console.log("AAA", payload)
         axios.put(`/${this.gameID}/components/${this.componentID}`, payload).then((res) => {
           resolve()
         }).catch((err) => {

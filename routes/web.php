@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\GameComponentController;
 use App\Http\Controllers\GameController;
-use App\Http\Controllers\TestSquareController;
 use Illuminate\Support\Facades\Route;
 
 /*

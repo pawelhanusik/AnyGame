@@ -30,11 +30,6 @@ export default {
       const randomID = Math.floor(Math.random() * this.$refs.dices.length)
       this.$refs.dices[randomID].client_roll()
     }, 3000)
-
-    Echo.channel('test-channel.1')
-      .listen('TestEvent', (e) => {
-        console.log("ECHO TestEvent", e)
-      })
   },
   destroyed() {
     if (rollDiceIntervalID !== null) {

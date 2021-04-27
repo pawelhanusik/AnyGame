@@ -86,7 +86,6 @@ export default {
         }
         
         let isVisible = null
-        console.log(updatedValues['visibility'])
         if (typeof(updatedValues['visibility']) != 'undefined' && updatedValues['visibility'] !== null) {
           isVisible = (updatedValues['visibility'] === 'hidden')
         }
