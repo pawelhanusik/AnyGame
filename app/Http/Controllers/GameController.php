@@ -85,19 +85,7 @@ class GameController extends Controller
         }
         
         $nick = request('nick');
-        $player = Player::where('game_id', $game->id)->where('nick', $nick)->first();
-        $playerExists = ($player !== null);
-        $isUserAuthenticated = ($playerExists && auth()->guard('player')->id() === $player->id);
-        if ($playerExists && !$isUserAuthenticated) {
-            return inertia('Game/Join', [
-                'game' => $game,
-                'isPublic' => $game->isPublic(),
-                'nick' => $nick,
-                'p' => $password,
-                'error' => 'Nick is already taken'
-            ]);
-        }
-
+        
         if ($password !== $game->password) {
             return inertia('Game/Join', [
                 'game' => $game,
@@ -107,9 +95,23 @@ class GameController extends Controller
                 'error' => 'Bad password'
             ]);
         }
-        
-        // TODO: Simplify all of these if's
-        if (!$playerExists) {
+
+        $player = Player::where('game_id', $game->id)->where('nick', $nick)->first();
+        $playerExists = ($player !== null);
+        $isUserAuthenticated = ($playerExists && auth()->guard('player')->id() === $player->id);
+        if ($playerExists) {
+            if ($isUserAuthenticated) {
+                $player->touch();
+            } else {
+                return inertia('Game/Join', [
+                    'game' => $game,
+                    'isPublic' => $game->isPublic(),
+                    'nick' => $nick,
+                    'p' => $password,
+                    'error' => 'Nick is already taken'
+                ]);
+            }
+        } else {
             $player = Player::create([
                 'nick' => $nick,
                 'game_id' => $game->id
@@ -120,10 +122,6 @@ class GameController extends Controller
             $playerAuthGuard->login($player);
 
             $game->addComponentsForNewPlayer($player);
-        } else if ($isUserAuthenticated){
-            $player->touch();
-        } else {
-            return;
         }
 
         return inertia('Game/Show', [
