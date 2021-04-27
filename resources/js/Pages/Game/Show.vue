@@ -86,7 +86,8 @@ export default {
         }
         
         let isVisible = null
-        if (updatedValues['visibility'] !== null) {
+        console.log(updatedValues['visibility'])
+        if (typeof(updatedValues['visibility']) != 'undefined' && updatedValues['visibility'] !== null) {
           isVisible = (updatedValues['visibility'] === 'hidden')
         }
         component2update.updateParams(
@@ -166,7 +167,7 @@ export default {
           }
         }
         let isVisible = null
-        if (c.visibility !== null) {
+        if (typeof(c.visibility) != 'undefined' && c.visibility !== null) {
           isVisible = (c.visibility === 'hidden')
         }
         newComponent.updateParams(
